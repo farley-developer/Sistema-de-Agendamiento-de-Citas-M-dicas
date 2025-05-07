@@ -71,3 +71,131 @@
 - El sistema debe estar preparado para integrarse con un frontend en el futuro.
 - Se utilizarán herramientas open-source únicamente.
 - Los datos sensibles deben cifrarse adecuadamente.
+
+# 🗄️ Documentación del Esquema SQL - MedAgenda
+
+Este documento describe las tablas, campos, relaciones y reglas clave del modelo de datos del sistema de agendamiento de citas médicas **MedAgenda**.
+
+---
+
+## 📘 Tabla: `usuarios`
+
+Contiene los datos de todos los usuarios del sistema (pacientes, médicos y administrativos).
+
+| Campo             | Tipo           | Descripción                                     |
+|------------------|----------------|-------------------------------------------------|
+| id               | SERIAL         | Identificador único (PK)                        |
+| nombre           | VARCHAR(100)   | Nombre completo del usuario                     |
+| correo           | VARCHAR(100)   | Correo electrónico (único)                      |
+| contraseña       | TEXT           | Contraseña (hasheada)                           |
+| rol              | VARCHAR(20)    | `'paciente'`, `'admin'` o `'medico'`            |
+| fecha_nacimiento | DATE           | Fecha de nacimiento                             |
+| telefono         | VARCHAR(20)    | Número de contacto                              |
+| creado_en        | TIMESTAMP      | Fecha y hora de creación                        |
+
+---
+
+## 📘 Tabla: `especialidades`
+
+Representa las distintas especialidades médicas disponibles en la clínica.
+
+| Campo  | Tipo         | Descripción                     |
+|--------|--------------|---------------------------------|
+| id     | SERIAL       | Identificador único (PK)        |
+| nombre | VARCHAR(100) | Nombre único de la especialidad |
+
+---
+
+## 📘 Tabla: `medicos`
+
+Relaciona un usuario con una especialidad médica.
+
+| Campo           | Tipo    | Descripción                                           |
+|------------------|---------|-------------------------------------------------------|
+| id               | SERIAL  | Identificador único (PK)                              |
+| usuario_id       | INTEGER | Referencia a `usuarios(id)` (1:1, médico como usuario)|
+| especialidad_id  | INTEGER | Referencia a `especialidades(id)`                    |
+
+🔗 **Relaciones**:
+- `usuario_id` → `usuarios(id)` con `UNIQUE`, para asegurar que un médico es un solo usuario.
+- `especialidad_id` → `especialidades(id)`
+
+---
+
+## 📘 Tabla: `disponibilidades`
+
+Define los bloques horarios en que un médico está disponible.
+
+| Campo       | Tipo    | Descripción                                       |
+|-------------|---------|---------------------------------------------------|
+| id          | SERIAL  | Identificador único (PK)                          |
+| medico_id   | INTEGER | FK a `medicos(id)`                                |
+| fecha       | DATE    | Día de disponibilidad                             |
+| hora_inicio | TIME    | Hora de inicio del bloque                         |
+| hora_fin    | TIME    | Hora de fin del bloque                            |
+
+🔐 **Restricciones**:
+- `hora_inicio < hora_fin`
+- `medico_id` → `medicos(id)`
+
+---
+
+## 📘 Tabla: `citas`
+
+Almacena la información de las citas médicas entre pacientes y médicos.
+
+| Campo        | Tipo     | Descripción                                                  |
+|--------------|----------|--------------------------------------------------------------|
+| id           | SERIAL   | Identificador único (PK)                                     |
+| paciente_id  | INTEGER  | FK a `usuarios(id)` (debe tener rol 'paciente')              |
+| medico_id    | INTEGER  | FK a `medicos(id)`                                           |
+| fecha        | DATE     | Fecha de la cita                                             |
+| hora         | TIME     | Hora de la cita                                              |
+| estado       | VARCHAR  | `'pendiente'`, `'confirmada'`, `'cancelada'`, `'asistida'`, `'inasistencia'` |
+| motivo       | TEXT     | Texto libre que indica el motivo de la cita                  |
+| creada_en    | TIMESTAMP| Fecha de creación del registro                               |
+
+🔐 **Restricciones**:
+- `paciente_id` → `usuarios(id)`
+- `medico_id` → `medicos(id)`
+- `estado` restringido a los valores posibles.
+
+---
+
+## 🧭 Relaciones entre tablas
+
+- `usuarios` se relaciona con:
+  - `medicos` (1:1 si el usuario es médico)
+  - `citas` como paciente
+
+- `especialidades` se relacionan con `medicos` (N:1)
+
+- `medicos` tienen múltiples `disponibilidades` y `citas`
+
+---
+
+## 📌 Índices recomendados
+
+| Índice | Propósito |
+|--------|-----------|
+| `idx_citas_paciente` | Agiliza búsquedas por paciente en citas |
+| `idx_citas_medico_fecha` | Mejora consultas por fecha para un médico |
+| `idx_disponibilidad_medico_fecha` | Permite encontrar horarios disponibles más rápido |
+
+---
+
+## 🔐 Reglas de integridad
+
+- No se pueden registrar citas en horarios no disponibles (debe validarse desde la app).
+- Un médico no puede tener dos bloques de disponibilidad que se solapen.
+- Solo usuarios con rol `'paciente'` pueden agendar citas.
+- Citas no pueden tener estado "asistida" o "inasistencia" si aún no ha pasado su fecha/hora.
+
+---
+
+## ✏️ Notas adicionales
+
+- Las contraseñas no se almacenan en texto plano.
+- Todos los campos de tipo `TIMESTAMP` usan la hora del servidor.
+- Este modelo es extensible: se puede incorporar un sistema de pagos, reseñas, encuestas de satisfacción, etc.
+
