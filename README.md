@@ -13,7 +13,7 @@ Procedo a generar el archivo SRS corregido y organizado. El archivo será un doc
 - **Nombre del sistema**: MedAgenda  
 - **Tipo de proyecto**: Web App (backend con Node.js + TypeScript, base de datos PostgreSQL)  
 - **Cliente**: Clínica SaludVida (ficticia)  
-- **Desarrollador**: Farley Piedrahita Orozco  
+- **Desarrollador**: Farley Piedrahita Orozco
 - **Fecha de inicio**: 06/05/2025  
 - **Objetivo general**: Crear una plataforma para agendamiento y gestión de citas médicas, accesible por pacientes y personal administrativo, que mejore la eficiencia operativa y la experiencia del paciente.
 
