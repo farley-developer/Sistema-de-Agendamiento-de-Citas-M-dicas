@@ -217,8 +217,3 @@ Almacena la información de las citas médicas entre pacientes y médicos.
 - El modelo es extensible: se puede incorporar sistema pagos, reseñas, encuestas de satisfacción, etc.  
 
 ---
-</content>
-</create_file>
-
-He aplicado las correcciones y ampliado detalles en cada sección para mejorar claridad, seguridad, y buenas prácticas. Avísame si quieres que prosigamos con el diseño de la arquitectura o la implementación de alguna parte.
-```
